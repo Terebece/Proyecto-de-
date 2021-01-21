@@ -11,6 +11,8 @@ EQUIPO: VeryBlueBerries
 **** Miguel Ángel Torres Sánchez 315300442
 **** Maria del Pilar Sanchez Benitez 315239674 
 |#
+
+;; LF definition
 (define-language LF
   (terminals
    (variable (x))
@@ -76,6 +78,45 @@ EQUIPO: VeryBlueBerries
          `(if ,e0 ,e1 (void))]))
 
 ;--------- REMOVE-STRING-------
+
+;; LNS extends LNI, removes strings as terminals
+(define-language LNS (extends LNI)
+  (terminals
+   (- (string (s))))
+  (Expr (e body)
+        (- s)))
+
+
+;; LNS parser
+(define-parser parse-LNS LNS)
+
+
+;; Pass that defines a preprocess to remove strings as terminals in our language
+(define-pass remove-string : LNI(ir) -> LNS()
+  (Expr : Expr (ir) -> Expr()
+        [(,s) (let ([str (string->list s)])
+                (build-list `(list ,(car str)) (cdr str)))]))
+
+
+;; Auxiliary recursive function for the remove-string pass.
+;; Given a list expression from LNS and a list of LNS expressions
+;; returns a new list from LNS with all the expressions of both lists.
+(define (build-list expr elems)
+  (nanopass-case (LNS Expr) expr
+                 [(list ,e* ...) (if (empty? elems)
+                                     (with-output-language (LNS Expr) `(list ,e* ...)) ;; If there's no elements left to add, return the list expr.
+                                     (build-list (with-output-language (LNS Expr) `(list ,e* ... ,(car elems))) (cdr elems)))] ;; Add the first element of elems and recursion.
+                 [else (error "Expected list expression.")]))
+
+
+#| Examples for remove-string
+(remove-string (parse-LNI `("hola")))
+Answer: (language:LNS '(list #\h #\o #\l #\a))
+
+(remove-string (parse-LNI `("Esto es un string.")))
+Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\space #\s #\t #\r #\i #\n #\g #\.))
+|#
+
 
 ;--------- CURRY-LET-----------
 (define-language L7
