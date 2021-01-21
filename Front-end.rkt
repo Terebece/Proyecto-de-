@@ -11,8 +11,6 @@ EQUIPO: VeryBlueBerries
 **** Miguel Ángel Torres Sánchez 315300442
 **** Maria del Pilar Sanchez Benitez 315239674 
 |#
-
-;; LF definition
 (define-language LF
   (terminals
    (variable (x))
@@ -112,7 +110,6 @@ EQUIPO: VeryBlueBerries
 #| Examples for remove-string
 (remove-string (parse-LNI `("hola")))
 Answer: (language:LNS '(list #\h #\o #\l #\a))
-
 (remove-string (parse-LNI `("Esto es un string.")))
 Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\space #\s #\t #\r #\i #\n #\g #\.))
 |#
@@ -155,6 +152,29 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
 
 
 ;--------- UN-ANONYMOUS--------
+
+;Extendemos el lenguaje LF, para agregar funciones con nombre
+(define-language L8
+  (extends LF)
+  (Expr (e body)
+        (+ (letfun ([x t e]) body))))
+
+(define-parser parser-L8 L8)
+;; Dada una lambda regresa una expresion letfun
+(define-pass nameLambda : L8 (e) -> L8()
+  (Expr : Expr(e) -> Expr()
+        [(lambda ([,x* ,t*] ...) ,body* ... ,body)
+         `(letfun [foo ,'Lambda (,e)] foo)]))
+
+;;Funcion auxiliar crear un nuevo foo cada letfun
+;;(define-pass newfoo : L8(e) -> L8()
+  ;(Expr : Expr (e) -> Expr()
+   ;     [(letfun [,x ,t ,e] ,body)
+    ;     `(letfun [,(+ x 1) ,t ,e] (newFoo ,body))]))
+
+(define-pass un-anonymous : L8(e) -> L8()
+  (Expr : Expr (e) -> Expr ()))
+
 
 ;--------- VERIFY-ARITY -------
 
