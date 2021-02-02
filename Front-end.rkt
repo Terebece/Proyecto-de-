@@ -8,7 +8,7 @@ Laboratorio: Fernando Abigail Galicia Mendoza
 
 EQUIPO: VeryBlueBerries
 **** Teresa Becerril Torres 315045132
-**** Miguel Ángel Torres Sánchez 315300442
+**** Miguel Angel Torres Sanchez 315300442
 **** Maria del Pilar Sanchez Benitez 315239674 
 |#
 (define-language LF
@@ -70,7 +70,7 @@ EQUIPO: VeryBlueBerries
 ; The parser of LF
 (define-parser parse-LF LF)
 
-#| Language LI definition
+#| Language LNI definition
    Extends LF
    * removes one-armed if statements
 |#
@@ -82,7 +82,7 @@ EQUIPO: VeryBlueBerries
 ; LNI parser
 (define-parser parse-LNI LNI)
 
-; Paass that removes one-armed if statements
+; Pass that removes one-armed if statements
 (define-pass remove-one-armed-if : LF(ir) -> LNI()
   (Expr : Expr (ir) -> Expr()
         [(if ,[e0] ,[e1])
@@ -123,6 +123,7 @@ EQUIPO: VeryBlueBerries
 #| Examples for remove-string
 (remove-string (parse-LNI `("hola")))
 Answer: (language:LNS '(list #\h #\o #\l #\a))
+
 (remove-string (parse-LNI `("Esto es un string.")))
 Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\space #\s #\t #\r #\i #\n #\g #\.))
 |#
@@ -194,7 +195,8 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
 ;--------- VERIFY-ARITY -------
 
 ;; Pass that verifies the arity of a primitive operations
-;; Checks if the arity is at least 2.
+;; Checks if arity is at least 2 for binary operations.
+;; Checks if airty is 1 for not and list operations.
 (define-pass verify-arity : L8 (e) -> L8 ()
   (Expr : Expr (e) -> Expr ()
         [(primapp ,pr ,[e*] ... ,[e])
@@ -240,9 +242,6 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
                  [(primapp ,pr ,e* ... ,e) (append (append-map free-vars e*) (free-vars e))]
                  [(if ,e0 ,e1) (append (free-vars e0) (free-vars e1))]
                  [(if ,e0 ,e1 ,e2) (append (free-vars e0) (free-vars e1) (free-vars e2))]
-                 ;[(and ,e ,e* ...) (append (free-vars e) (append-map free-vars e*))]
-                 ;[(or ,e ,e* ...) (append (free-vars e) (append-map free-vars e*))]
-                 ;[(not ,e) (free-vars e)]
                  [(list ,e* ,e) (append (append-map free-vars e*) (free-vars e))]
                  [(lambda ([,x* ,t*] ... ) ,body* ... ,body) (remove* x* (append (append-map free-vars body*) (free-vars body)))]
                  [(let ([,x* ,t* ,e*]) ,body* ... ,body) (remove* (list x*) (append (free-vars e*) (append-map free-vars body*) (free-vars body)))]
