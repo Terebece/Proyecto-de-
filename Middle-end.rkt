@@ -85,11 +85,6 @@ EQUIPO: VeryBlueBerries
 
 ;; ----------- J Algorithm ---------------
 
-#|!!!!!! Hay un ERROR en la implementación del algoritmo J.
-!!!!!!!! Para el caso begin no aplican J a todas las expresiones
-!!!!!!!! dentro de begin, esto es importante ya que puede haber
-!!!!!!!! error de tipado en alguna de las expresiones dentro del begin.|#
-
 ;; Implementation of function J for L10.
 ;; Returns the type of a L10 expression.
 (define (J expr ctx)
@@ -243,6 +238,9 @@ EQUIPO: VeryBlueBerries
 
 ;; (J (parse-L10 '(letfun ([foo (Bool → Int) (lambda ([x Bool]) (if x (const Int 1) (const Int 2)))]) foo)) '())
 ;; Returns: '(Bool → Int)
+
+;;(J (parse-L10 '(begin (const Int 2) (primapp car (list (const Int 6) (const Bool #t))) (const Bool #t))) '())
+;; Returns: "La lista no es homogenea."
 ;; ---------------------------------------------------
 
 ;; Pass for L10 that substitutes type Lambda references for type T->T
