@@ -18,13 +18,20 @@ EQUIPO: VeryBlueBerries
 (define-language L9
   (extends L8)
   (Expr (e body)
-        (- (lambda ([x* t*] ...) body)
+        (- c
+           (lambda ([x* t*] ...) body* ... body)
            (e0 e1 ...))
-        (+ (lambda ([x t]) body)
+        (+ (quot c)
+           (lambda ([x t]) body)
            (e0 e1))))
 
 ;; Language L9 parser
 (define-parser parse-L9 L9)
+
+;; Pass to convert constants c into '(quot c)
+(define-pass quote-c : L8 (ir) -> L9 ()
+  (Expr : Expr (e) -> Expr ()
+        [(,c) `(quot ,c)]))
 
 ;; Pass for currying lambda expressions and function applications
 (define-pass curry : L8 (ir) -> L9 ()
@@ -214,6 +221,7 @@ EQUIPO: VeryBlueBerries
                         (error "F: El primer parámetro no es una función. :c")))]
                  ))
 
+
 ;; Function 'get' that gets the type of a variable given a context.
 (define (get x ctx)
   (if (empty? ctx)
@@ -222,6 +230,20 @@ EQUIPO: VeryBlueBerries
         (if (equal? x (car d))
             (cdr d)
             (get x (cdr d))))))
+
+;; -------- Examples for the J algorithm -------------
+;; (J (parse-L10 '(primapp or (primapp not (const Bool #t)) (const Bool #f))) '())
+;; Returns: 'Bool
+
+;; (J (parse-L10 '(primapp car (list (const Int 6) (const Bool #t)))) '())
+;; Returns: "La lista no es homogenea."
+
+;; (J (parse-L10 '(primapp cdr (list (const Int 6) (const Int 7)))) '())
+;; Returns: '(List of Int)
+
+;; (J (parse-L10 '(letfun ([foo (Bool → Int) (lambda ([x Bool]) (if x (const Int 1) (const Int 2)))]) foo)) '())
+;; Returns: '(Bool → Int)
+;; ---------------------------------------------------
 
 ;; Pass for L10 that substitutes type Lambda references for type T->T
 ;; and type List references for type (List of T) if necessary.

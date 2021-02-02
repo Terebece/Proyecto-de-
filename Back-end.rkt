@@ -26,7 +26,7 @@ EQUIPO: VeryBlueBerries
 
 (define-pass list-to-array : L11 (ir) -> L12 ()
   (Expr : Expr (ir) -> Expr()
-        [(list ,e* ...) `(array ,(len e*) ,(typeof (list e*)) [,e*])]))
+        [(list ,e* ...) `(array ,(len e*) ,(J (list e*) '()) [,e*])]))
 
 
 (define (c expr)

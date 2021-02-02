@@ -41,10 +41,21 @@ EQUIPO: VeryBlueBerries
   (symbol? x))
 
 ;; Predicate for the types
-;; Este predicado es incorrecto, ya que no corresponde a nuestra gramática actual de tipos.
-;; Faltan los tipos función (→) y los tipos lista.
-(define (type? x)
-  (or (equal? x 'Bool) (equal? x 'Int) (equal? x 'Char) (equal? x 'List) (equal? x 'String) (equal? x 'Lambda)))
+;; Bool | Int | Char | List | Lambda
+(define (type? x) (or (b-type? x) (c-type? x)))
+
+;; For Bool, Int, Char and List types
+(define (b-type? x) (memq x '(Bool Char Int List Lambda)))
+
+;; For Lambda type
+(define (c-type? x) (if (list? x)
+        (let* (
+                [f (car x)]
+                [s (cadr x)]
+                [t (caddr x)])
+        (or (and (equal? f 'List) (equal? s 'of) (type? t))
+            (and (type? f) (equal? s '→) (type? t))))
+        #f))
 
 ;; Predicate for the constants
 (define (constant? x)
@@ -59,17 +70,19 @@ EQUIPO: VeryBlueBerries
 ; The parser of LF
 (define-parser parse-LF LF)
 
-#| Extencion del lenguaje LF
-   * se elimina el if de una sola rama
+#| Language LI definition
+   Extends LF
+   * removes one-armed if statements
 |#
 (define-language LNI (extends LF)
   (Expr (e body)
         (- (if e0 e1))
         ))
-;Definimos el parser para el nuevo lenguaje LNI
+
+; LNI parser
 (define-parser parse-LNI LNI)
 
-; Definimos un preproceso para eliminar el if
+; Paass that removes one-armed if statements
 (define-pass remove-one-armed-if : LF(ir) -> LNI()
   (Expr : Expr (ir) -> Expr()
         [(if ,[e0] ,[e1])
@@ -153,13 +166,15 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
 
 ;--------- UN-ANONYMOUS--------
 
-;Extendemos el lenguaje LF, para agregar funciones con nombre
+;; L8 defintion
+;; Extends L7, add named functions
 (define-language L8
-  (extends LF)
+  (extends L7)
   (Expr (e body)
         (+ (letfun ([x t e]) body))))
 
 (define-parser parser-L8 L8)
+
 ;; Dada una lambda regresa una expresion letfun
 (define-pass nameLambda : L8 (e) -> L8()
   (Expr : Expr(e) -> Expr()
@@ -178,8 +193,9 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
 
 ;--------- VERIFY-ARITY -------
 
-
-(define-pass verify-arity : L7 (e) -> L7 ()
+;; Pass that verifies the arity of a primitive operations
+;; Checks if the arity is at least 2.
+(define-pass verify-arity : L8 (e) -> L8 ()
   (Expr : Expr (e) -> Expr ()
         [(primapp ,pr ,[e*] ... ,[e])
          (match pr
@@ -218,7 +234,7 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
 
 ;; Function that returns the list of free variables from an expression in L7
 (define (free-vars e)
-  (nanopass-case (L7 Expr) e
+  (nanopass-case (L8 Expr) e
                  [,x (list x)]
                  [(begin ,e* ... ,e) (append (append-map free-vars e*) (free-vars e))]
                  [(primapp ,pr ,e* ... ,e) (append (append-map free-vars e*) (free-vars e))]
@@ -231,10 +247,11 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
                  [(lambda ([,x* ,t*] ... ) ,body* ... ,body) (remove* x* (append (append-map free-vars body*) (free-vars body)))]
                  [(let ([,x* ,t* ,e*]) ,body* ... ,body) (remove* (list x*) (append (free-vars e*) (append-map free-vars body*) (free-vars body)))]
                  [(letrec ([,x* ,t* ,e*]) ,body* ... ,body) (remove* (list x*) (append (free-vars e*) (append-map free-vars body*) (free-vars body)))]
+                 ;[(letfun ([,x* ,t* ,e*]) body) ...]
                  [else '()]))
 
-;; Definition of the pass that verifies that expressions in L7 don't contain free variables
-(define-pass verify-vars : L7 (e) -> L7 ()
+;; Pass that verifies that expressions in L8 don't contain free variables
+(define-pass verify-vars : L8 (e) -> L8 ()
   (Expr : Expr (e) -> Expr ()
         [,x (error "Free variable: " x)]
         [,c c]
