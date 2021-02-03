@@ -180,17 +180,34 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
 (define-pass nameLambda : L8 (e) -> L8()
   (Expr : Expr(e) -> Expr()
         [(lambda ([,x* ,t*] ...) ,body* ... ,body)
-         `(letfun [foo ,'Lambda (,e)] foo)]))
+         `(letfun ([foo0 ,'Lambda ,(nameLambda body)]) foo0)]
+       [(letfun ([,x ,t ,e]) ,body)
+        `(letfun ([,x ,t ,(nameLambda e)]) ,body)]))
 
-;;Funcion auxiliar crear un nuevo foo cada letfun
-;;(define-pass newfoo : L8(e) -> L8()
-  ;(Expr : Expr (e) -> Expr()
-   ;     [(letfun [,x ,t ,e] ,body)
-    ;     `(letfun [,(+ x 1) ,t ,e] (newFoo ,body))]))
+;;Funcion auxiliar crear un nuevo foo
+;;(string-append "foo" (number->string (+ (string->number(substring "foo0" 3)) 1)))
+(define (newf x)
+  (string->symbol(string-append "foo" (number->string (+ (string->number(substring (symbol->string `,x) 3))1 ))))
+      )
+;; Funcion auxiliar crear un nuevo foo cada letfun
+(define-pass ecfoo : L8(e) -> L8()
+  (Expr : Expr(e) -> Expr()
+        [(letfun ([,x ,t ,e]) ,body)
+         `(letfun ([,(newf x) ,t , e]),(newf x))]
+        ))
 
+;;Dada una lambda nos regrea una expresión letfun
 (define-pass un-anonymous : L8(e) -> L8()
-  (Expr : Expr (e) -> Expr ()))
+  (Expr : Expr (e) -> Expr()
+        [(letfun ([,x ,t ,e]) ,body)
+         `(letfun [,(ecfoo x) ,t ,e] ,(un-anonymous body))]
+        [(lambda ([,x* ,t*] ...) ,body* ... ,body)
+         `(,(ecfoo(nameLambda e)))]))
 
+;(un-anonymous (parser-L8 '(lambda ([x Bool]) (if x 1 2))))
+;; Desired response (language:L8 '(letfun ((foo Lambda (lambda ((x Bool)) (if x 1 2)))) foo))
+;(un-anonymous (parser-L8 '(lambda ([y Int]) (lambda ([x Bool]) (if x 1 y)))))
+;; Desired response (language:L8 '(letfun ((foo Lambda (lambda ((y Int)) (letfun ((foo0 Lambda (lambda ((x Bool)) (if x 1 y)))) foo0)))) foo))
 
 ;--------- VERIFY-ARITY -------
 
