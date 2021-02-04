@@ -3,7 +3,7 @@
 #|
 Compiladores 2021-1
 Profesora: Dra. Lourdes del Carmen Gonzalez Huesca
-Ayudante: Juan Alfonso Garduño Solís
+Ayudante: Juan Alfonso Garduño Solis
 Laboratorio: Fernando Abigail Galicia Mendoza
 
 EQUIPO: VeryBlueBerries
@@ -48,7 +48,7 @@ EQUIPO: VeryBlueBerries
 (define (b-type? x) (memq x '(Bool Char Int List Lambda)))
 
 ;; For Lambda type
-(define (c-type? x) (if (list? x)
+(define (c-type? x) (if (and (list? x) (equal? (length x) 3))
         (let* (
                 [f (car x)]
                 [s (cadr x)]
@@ -174,7 +174,7 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
   (Expr (e body)
         (+ (letfun ([x t e]) body))))
 
-(define-parser parser-L8 L8)
+(define-parser parse-L8 L8)
 
 ;; Dada una lambda regresa una expresion letfun
 (define-pass nameLambda : L8 (e) -> L8()
