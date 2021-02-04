@@ -11,6 +11,8 @@ EQUIPO: VeryBlueBerries
 **** Miguel Angel Torres Sanchez 315300442
 **** Maria del Pilar Sanchez Benitez 315239674 
 |#
+
+(provide (all-defined-out))
 (define-language LF
   (terminals
    (variable (x))

@@ -13,8 +13,7 @@ EQUIPO: VeryBlueBerries
 |#
 
 (require "Middle-end.rkt")
-(require "Front-end.rkt")
-(provide (all-defined-out))
+
 ;; L12 defintion
 ;; (array len type [e* ... ])
 (define-language L12
@@ -64,9 +63,4 @@ EQUIPO: VeryBlueBerries
                                   [Int (number->string c)])]
                  [(primapp ,pr ,e* ...) (match pr
                                           ['+ (string-append (c (first e*)) "+" (c (second e*)))]
-                                          ['- (string-append (c (first e*)) "-" (c (second e*)))]
-                                          ['* (string-append (c (first e*)) "*" (c (second e*)))]
-                                          ['/ (string-append (c (first e*)) "/" (c (second e*)))]
-                                          ['and (string-append (c (first e*)) "and" (c (second e*)))]
-                                          ['or (string-append (c (first e*)) "or" (c (second e*)))]
-                                          ['not (string-append "not" (c (first e*)) (c (second e*)))])]))
+                                          ['- (string-append (c (first e*)) "-" (c (second e*)))])]))

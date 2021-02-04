@@ -13,7 +13,6 @@ EQUIPO: VeryBlueBerries
 |#
 
 (require "Front-end.rkt")
-(provide (all-defined-out))
 
 ;; Language L9 definition
 (define-language L9
