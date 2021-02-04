@@ -3,7 +3,7 @@
 #|
 Compiladores 2021-1
 Profesora: Dra. Lourdes del Carmen Gonzalez Huesca
-Ayudante: Juan Alfonso Garduño Solís
+Ayudante: Juan Alfonso Garduño Solis
 Laboratorio: Fernando Abigail Galicia Mendoza
 EQUIPO: VeryBlueBerries
 **** Teresa Becerril Torres 315045132
@@ -47,7 +47,7 @@ EQUIPO: VeryBlueBerries
 (define (b-type? x) (memq x '(Bool Char Int List Lambda)))
 
 ;; For Lambda type
-(define (c-type? x) (if (list? x)
+(define (c-type? x) (if (and (list? x) (equal? (length x) 3))
         (let* (
                 [f (car x)]
                 [s (cadr x)]
