@@ -159,6 +159,8 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
 
 ;--------- IDENTIFY-ASSIGMENT--
 
+;; Pass that identifies let expressions used to define functions
+;; and replaces them for letrec.
 (define-pass identify-assignments : L7 (e) -> L7 ()
   (Expr : Expr (e) -> Expr ()
         [(let ([,x* ,t* ,[e*]]) ,[body*] ... ,[body])
