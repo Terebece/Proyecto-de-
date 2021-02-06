@@ -221,6 +221,7 @@ EQUIPO: VeryBlueBerries
                         (error "F: El primer parámetro no es una función. :c")))]
                  [(define ,x ,e) (J e ctx)]
                  [(while [,e0] ,e1) (J e1 ctx)]
+                 [(for [,x ,e0] ,e1) (J e1 ctx)]
                  ))
 
 
