@@ -15,6 +15,8 @@ EQUIPO: VeryBlueBerries
 (require "Front-end.rkt")
 (provide (all-defined-out))
 
+;; -------------------------------------------- CURRY ---------------------------------------------
+
 ;; Language L9 definition
 (define-language L9
   (extends L8)
@@ -50,6 +52,7 @@ EQUIPO: VeryBlueBerries
                `,be0
                (f `(,be0 ,(car be1)) (cdr be1))))]))
 
+;; ------------------------------------------ TYPE-CONST ------------------------------------------
 
 ;; Language L10 definition
 (define-language L10
@@ -70,6 +73,7 @@ EQUIPO: VeryBlueBerries
            [(number? c) `(const Int ,c)]
            [(char? c) `(const Char ,c)])]))
 
+;; ------------------------------------------ TYPE-INFER ------------------------------------------
 
 ;; Function that verifies if a type t1 is unfiable with a type t2.
 ;; It doesn't return the unifier, it returns a boolean.
@@ -84,7 +88,7 @@ EQUIPO: VeryBlueBerries
 		(error "Se esperaban 2 tipos")))
 
 
-;; ----------- J Algorithm ---------------
+;; --------------------------------- J Algorithm ---------------------------------
 
 ;; Implementation of function J for L10.
 ;; Returns the type of a L10 expression.
@@ -262,6 +266,7 @@ EQUIPO: VeryBlueBerries
                `(let ([,x ,s ,e]) ,body))
              `(let ([,x ,t ,e]) ,body))]))
 
+;; ------------------------------------------- UNCURRY --------------------------------------------
 
 ;; Language L11 definition
 (define-language L11

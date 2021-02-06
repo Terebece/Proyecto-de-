@@ -13,6 +13,8 @@ EQUIPO: VeryBlueBerries
 |#
 
 (provide (all-defined-out))
+
+;; Definition of source language
 (define-language LF
   (terminals
    (variable (x))
@@ -42,16 +44,18 @@ EQUIPO: VeryBlueBerries
 
 ;; Predicate for the variables
 (define (variable? x)
-  (symbol? x))
+  (and (symbol? x)
+       (not (primitive? x))
+       (not (constant? x))))
 
 ;; Predicate for the types
-;; Bool | Int | Char | List | Lambda
+;; Bool | Int | Char | List | Lambda | List of T | T → T
 (define (type? x) (or (b-type? x) (c-type? x)))
 
 ;; For Bool, Int, Char and List types
 (define (b-type? x) (memq x '(Bool Char Int List Lambda)))
 
-;; For Lambda type
+;; For List of T and T → T types
 (define (c-type? x) (if (list? x)
         (let* (
                 [f (car x)]
@@ -71,13 +75,13 @@ EQUIPO: VeryBlueBerries
       (equal? x 'length) (equal? x 'car) (equal? x 'cdr)))
 
 
-; The parser of LF
+;; The parser of LF
 (define-parser parse-LF LF)
 
-#| Language LNI definition
-   Extends LF
-   * removes one-armed if statements
-|#
+;; -------------------------------------- REMOVE-ONE-ARMED-IF -------------------------------------
+
+;; Language LNI definition 
+;; LNI extends LF, removes one-armed if statements
 (define-language LNI (extends LF)
   (Expr (e body)
         (- (if e0 e1))
@@ -92,7 +96,7 @@ EQUIPO: VeryBlueBerries
         [(if ,[e0] ,[e1])
          `(if ,e0 ,e1 (void))]))
 
-;--------- REMOVE-STRING-------
+;; ----------------------------------------- REMOVE-STRING ----------------------------------------
 
 ;; LNS extends LNI, removes strings as terminals
 (define-language LNS (extends LNI)
@@ -101,17 +105,14 @@ EQUIPO: VeryBlueBerries
   (Expr (e body)
         (- s)))
 
-
 ;; LNS parser
 (define-parser parse-LNS LNS)
-
 
 ;; Pass that defines a preprocess to remove strings as terminals in our language
 (define-pass remove-string : LNI(ir) -> LNS()
   (Expr : Expr (ir) -> Expr()
         [(,s) (let ([str (string->list s)])
                 (build-list `(list ,(car str)) (cdr str)))]))
-
 
 ;; Auxiliary recursive function for the remove-string pass.
 ;; Given a list expression from LNS and a list of LNS expressions
@@ -123,7 +124,6 @@ EQUIPO: VeryBlueBerries
                                      (build-list (with-output-language (LNS Expr) `(list ,e* ... ,(car elems))) (cdr elems)))] ;; Add the first element of elems and recursion.
                  [else (error "Expected list expression.")]))
 
-
 #| Examples for remove-string
 (remove-string (parse-LNI `("hola")))
 Answer: (language:LNS '(list #\h #\o #\l #\a))
@@ -132,8 +132,11 @@ Answer: (language:LNS '(list #\h #\o #\l #\a))
 Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\space #\s #\t #\r #\i #\n #\g #\.))
 |#
 
+;; ------------------------------------------ CURRY-LET -------------------------------------------
 
-;--------- CURRY-LET-----------
+;; Language L7 definition 
+;; L7 extends LNS, removes let and letrec from multiple assignments and 
+;; adds let and letrec from a single assignment
 (define-language L7
   (extends LNS)
   (Expr (e body)
@@ -159,7 +162,7 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
                `(letrec ([,x ,t ,e]) ,body* ... ,body)
                `(letrec ([,x ,t ,e]) ,(f (car x*) (car t*) (car e*) (cdr x*) (cdr t*) (cdr e*) body* body))))]))
 
-;--------- IDENTIFY-ASSIGMENT--
+;; --------------------------------------- IDENTIFY-ASSIGMENT -------------------------------------
 
 ;; Pass that identifies let expressions used to define functions
 ;; and replaces them for letrec.
@@ -171,10 +174,10 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
                `(let ([,x* ,t* ,e*]) ,body* ... ,body))]))
 
 
-;--------- UN-ANONYMOUS--------
+;; ------------------------------------------- UN-ANONYMOUS ---------------------------------------
 
-;; L8 defintion
-;; Extends L7, add named functions
+;; Language L8 defintion
+;; L8 extends L7, add named functions
 (define-language L8
   (extends L7)
   (Expr (e body)
@@ -209,7 +212,7 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
 ;(un-anonymous (parser-L7 '(lambda ([y Int]) (lambda ([x Bool]) (if x 1 y)))))
 ;; Desired response (language:L8 '(letfun ((foo Lambda (lambda ((y Int)) (letfun ((foo0 Lambda (lambda ((x Bool)) (if x 1 y)))) foo0)))) foo))
 
-;--------- VERIFY-ARITY -------
+;; ----------------------------------------- VERIFY-ARITY -----------------------------------------
 
 ;; Pass that verifies the arity of a primitive operations
 ;; Checks if arity is at least 2 for binary operations.
@@ -249,7 +252,7 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
                      `(primapp cdr ,e* ... ,e)
                      (error "Arity mismatch in cdr expression"))])]))
 
-;--------- VERIFY-VARS --------
+;; ----------------------------------------- VERIFY-VARS ------------------------------------------
 
 ;; Function that returns the list of free variables from an expression in L7
 (define (free-vars e)

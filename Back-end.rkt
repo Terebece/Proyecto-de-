@@ -16,6 +16,7 @@ EQUIPO: VeryBlueBerries
 (require "Front-end.rkt")
 (provide (all-defined-out))
 
+;; ----------------------------------------- LIST-TO-ARRAY ----------------------------------------
 
 ;; L12 defintion
 ;; (array len type [e* ... ])
@@ -32,8 +33,7 @@ EQUIPO: VeryBlueBerries
 ;; and elements of the list.
 (define-pass list-to-array : L11 (ir) -> L12 ()
   (Expr : Expr (ir) -> Expr()
-        [(list ,e* ...) `(array ,(length e*) ,(typeof ir) [,e*])]
-        ))
+        [(list ,e* ...) `(array ,(length e*) ,(typeof ir) [,e*])]))
 
 ;; Function that given a list expression in L11
 ;; returns the type of the elements of the list.
@@ -61,6 +61,9 @@ EQUIPO: VeryBlueBerries
 
 
 ;;(list-to-array (parse-L11'(list (const Int 0) (const Int 0) (const Int 0) (const Int 0))))
+
+;; ---------------------------------------------- C -----------------------------------------------
+
 (define (c expr)
   (nanopass-case (L12 Expr) expr
                  [(const ,t ,c) (match t
