@@ -61,7 +61,7 @@ EQUIPO: VeryBlueBerries
 ;; Language L10 parser
 (define-parser parse-L10 L10)
 
-;; Pass that adds type anotations to language's constants
+;; Pass that adds type anotations to language's constants and global vars.
 (define-pass type-const : L9 (ir) -> L10 ()
   (Expr : Expr (e) -> Expr ()
         [(quot ,c)
@@ -215,6 +215,8 @@ EQUIPO: VeryBlueBerries
                             (second t0)
                             (error "F: El dominio y la entrada de la función son distintas. :'v"))
                         (error "F: El primer parámetro no es una función. :c")))]
+                 [(define ,x ,e) (J e ctx)]
+                 [(while [,e0] ,e1) (J e1 ctx)]
                  ))
 
 
