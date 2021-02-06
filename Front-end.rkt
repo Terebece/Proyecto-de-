@@ -36,7 +36,9 @@ EQUIPO: VeryBlueBerries
     (letrec ([x* t* e*] ...) body* ... body)
     (e0 e1 ...)
     (primapp pr e* ...)
-    (list e* ...)))
+    (list e* ...)
+    (define x e)
+    (while [e0] e1)))
 
 ;; Predicate for the variables
 (define (variable? x)
@@ -261,6 +263,8 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
                  [(let ([,x* ,t* ,e*]) ,body* ... ,body) (remove* (list x*) (append (free-vars e*) (append-map free-vars body*) (free-vars body)))]
                  [(letrec ([,x* ,t* ,e*]) ,body* ... ,body) (remove* (list x*) (append (free-vars e*) (append-map free-vars body*) (free-vars body)))]
                  [(letfun ([,x* ,t* ,e*]) ,body) (remove* (list x*) (append (free-vars e*)(free-vars body)))]
+                 [(define ,x ,e) (free-vars e)]
+                 [(while [,e0] ,e1) (append (free-vars e0) (free-vars e1))]
                  [else '()]))
 
 ;; Pass that verifies that expressions in L8 don't contain free variables
