@@ -133,7 +133,7 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
 
 ;--------- CURRY-LET-----------
 (define-language L7
-  (extends LF)
+  (extends LNS)
   (Expr (e body)
         (- (let ([x* t* e*] ...) body* ... body)
            (letrec ([x* t* e*] ...) body* ... body))
@@ -255,7 +255,6 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
                  [,x (list x)]
                  [(begin ,e* ... ,e) (append (append-map free-vars e*) (free-vars e))]
                  [(primapp ,pr ,e* ... ,e) (append (append-map free-vars e*) (free-vars e))]
-                 [(if ,e0 ,e1) (append (free-vars e0) (free-vars e1))]
                  [(if ,e0 ,e1 ,e2) (append (free-vars e0) (free-vars e1) (free-vars e2))]
                  [(list ,e* ,e) (append (append-map free-vars e*) (free-vars e))]
                  [(lambda ([,x* ,t*] ... ) ,body* ... ,body) (remove* x* (append (append-map free-vars body*) (free-vars body)))]
