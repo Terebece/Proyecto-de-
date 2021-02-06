@@ -77,8 +77,12 @@ EQUIPO: VeryBlueBerries
                                           ['not ("!" (string-append (c (first e*))))]
                                           ['and (string-append (c (first e*)) "&&" (c (second e*)))]
                                           ['or (string-append (c (first e*)) "||" (c (second e*)))]
-                                          ;['length ()]
-                                          ;['car ()]
+                                          ['length (let ([e (first e*)])
+                                                     (string-append "sizeof(" (c e) ")/sizeof(" (c (parse-L12 `(car e))) ")"))]
+                                          ['car (let ([e (first e*)])
+                                                  (nanopass-case (L12 Expr) e
+                                                                 [,x (string-append (symbol->string x) "[0]")]
+                                                                 [(array ,c0 ,t [,e*]) (string-append (c e) "[0]")]))]
                                           ;['cdr ()])]
                                           )]
                  [(begin ,[e*] ... ,e) ((let f ([e* e*])
@@ -88,14 +92,14 @@ EQUIPO: VeryBlueBerries
                  [(if ,e0 ,e1 ,e2) (if (void? e2)
                                        `((string-append "if" "("(c (e0))")" (c (e1)) ";"))
                                        `((string-append "if" "("(c (e0))")" (c (e1)) ";" "\n" "else"(c (e2))";")))]
-                 [(let ([,x ,t ,e]) ,body) ((string-append (c (const x t)) (c (e))))]
+                 [(let ([,x ,t ,e]) ,body) ((string-append (c (const x t)) ";" "\n" (c (e)) ";"))]
                  [(letrec ([,x ,t ,e]) ,body) ((string-append (c (t)) (c (x)) "("(c (e))")"";") (c(body)))]
                  [(letfun ([,x ,t ,e]) ,body) ((string-append (c (t)) (c (x)) "("(c (e))")"";") (c(body)))]
-                 [(array ,c0 ,t [,[e*] ...]) ((let f ([e* e*])
+                 [(array ,c0 ,t [,[e*] ...]) (let f ([e* e*])
                                             (if (null? e*)
-                                              `((string-append (c (t))  "[" (c (c0))"]" "=" "{""}"))
-                                              `((string-append (c (t))  "[" (c (c0))"]" "=" "{"(c(first e*)) ","(f (rest e*))"}"))
-                                           )))]
+                                              (string-append (c t)  "[" (c c0)"]" "=" "{""}")
+                                              (string-append (c t)  "[" (c c0)"]" "=" "{"(c (first e*)) ","(f (rest e*))"}")))
+                                           ]
                  [(,e0 ,e1) ((string-append (c (e0))";" "\n" (c(e1))";"))]))
                                       
                                         
