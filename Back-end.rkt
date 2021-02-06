@@ -15,6 +15,8 @@ EQUIPO: VeryBlueBerries
 (require "Middle-end.rkt")
 (require "Front-end.rkt")
 (provide (all-defined-out))
+
+
 ;; L12 defintion
 ;; (array len type [e* ... ])
 (define-language L12
@@ -30,7 +32,7 @@ EQUIPO: VeryBlueBerries
 ;; and elements of the list.
 (define-pass list-to-array : L11 (ir) -> L12 ()
   (Expr : Expr (ir) -> Expr()
-        [(list ,[e*] ...) `(array ,(length e*) ,(typeof ir) [,e*])]
+        [(list ,e* ...) `(array ,(length e*) ,(typeof ir) [,e*])]
         ))
 
 ;; Function that given a list expression in L11
@@ -58,15 +60,42 @@ EQUIPO: VeryBlueBerries
                `(lambda ([,(car bindingx*) ,(car bindingt*)]) ,(f (cdr bindingx*) (cdr bindingt*)))))]))
 
 
+;;(list-to-array (parse-L11'(list (const Int 0) (const Int 0) (const Int 0) (const Int 0))))
 (define (c expr)
   (nanopass-case (L12 Expr) expr
                  [(const ,t ,c) (match t
-                                  [Int (number->string c)])]
+                                  ['Int (number->string c)]
+                                  ['Bool (match c
+                                          ['#t (string-append "true")]
+                                          ['#f (string-append "false")])]
+                                  ['Char (string c)])]
                  [(primapp ,pr ,e* ...) (match pr
                                           ['+ (string-append (c (first e*)) "+" (c (second e*)))]
                                           ['- (string-append (c (first e*)) "-" (c (second e*)))]
                                           ['* (string-append (c (first e*)) "*" (c (second e*)))]
                                           ['/ (string-append (c (first e*)) "/" (c (second e*)))]
-                                          ['and (string-append (c (first e*)) "and" (c (second e*)))]
-                                          ['or (string-append (c (first e*)) "or" (c (second e*)))]
-                                          ['not (string-append "not" (c (first e*)) (c (second e*)))])]))
+                                          ['not ("!" (string-append (c (first e*))))]
+                                          ['and (string-append (c (first e*)) "&&" (c (second e*)))]
+                                          ['or (string-append (c (first e*)) "||" (c (second e*)))]
+                                          ;['length ()]
+                                          ;['car ()]
+                                          ;['cdr ()])]
+                                          )]
+                 [(begin ,[e*] ... ,e) ((let f ([e* e*])
+                                            (if (null? e*)
+                                                `((string-append "{""}"))
+                                                `((string-append "{"(c(first e*))"}" "\n" "{"(f (rest e*))"}")))))]
+                 [(if ,e0 ,e1 ,e2) (if (void? e2)
+                                       `((string-append "if" "("(c (e0))")" (c (e1)) ";"))
+                                       `((string-append "if" "("(c (e0))")" (c (e1)) ";" "\n" "else"(c (e2))";")))]
+                 [(let ([,x ,t ,e]) ,body) ((string-append (c (const x t)) (c (e))))]
+                 [(letrec ([,x ,t ,e]) ,body) ((string-append (c (t)) (c (x)) "("(c (e))")"";") (c(body)))]
+                 [(letfun ([,x ,t ,e]) ,body) ((string-append (c (t)) (c (x)) "("(c (e))")"";") (c(body)))]
+                 [(array ,c0 ,t [,[e*] ...]) ((let f ([e* e*])
+                                            (if (null? e*)
+                                              `((string-append (c (t))  "[" (c (c0))"]" "=" "{""}"))
+                                              `((string-append (c (t))  "[" (c (c0))"]" "=" "{"(c(first e*)) ","(f (rest e*))"}"))
+                                           )))]
+                 [(,e0 ,e1) ((string-append (c (e0))";" "\n" (c(e1))";"))]))
+                                      
+                                        
