@@ -186,6 +186,13 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
 
 (define-parser parser-L8 L8)
 
+;; Devuelve el número de expresiones alfa que aparecen en la expresión.
+(define (num-letfun exp n)
+  (nanopass-case (L8 Expr) exp
+   [(letfun ([,x ,t ,e]) ,body) (num-letfun e (+ n 1))]
+   [(lambda ([,x* ,t*] ...) ,body* ... ,body) (num-letfun body n)]
+   [else n]))
+
 ;;Pass define a lambda as a letfun expression
 (define-pass nameLambda : L7 (e) -> L8()
   (Expr : Expr(e) -> Expr()
@@ -193,25 +200,27 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
          `(letfun ([foo0 ,'Lambda (lambda ([,x* ,t*]...) ,(nameLambda body))]) foo0)]))
 
 ;;Auxiliary funcion create a new foo
-(define (newf x)
-  (string->symbol(string-append "foo" (number->string (+ (string->number(substring (symbol->string `,x) 3))1 )))))
+(define (newf x n)
+  (string->symbol(string-append "foo" (number->string (+ n 1)))))
 
 ;;Pass create a new foo every letfun
 (define-pass ecfoo : L8(e) -> L8()
   (Expr : Expr(e) -> Expr()
         [(letfun ([,x ,t ,e]) ,body)
-         `(letfun ([,(newf x) ,t ,e]),(newf x))]))
+         `(letfun ([,(newf x (num-letfun e 0)) ,t ,(ecfoo e)]),(newf x (num-letfun e 0)))]))
 
 ;;Given a lambda it returns a letfun expression
 (define-pass un-anonymous : L7(e) -> L8()
   (Expr : Expr (e) -> Expr()
         [(lambda ([,x* ,t*] ...) ,body* ... ,body)
-         `(,(ecfoo (nameLambda e)))]))
+         `,(ecfoo (nameLambda e))]))
 
-;(un-anonymous (parser-L7 '(lambda ([x Bool]) (if x 1 2))))
-;; Desired response (language:L8 '(letfun ((foo Lambda (lambda ((x Bool)) (if x 1 2)))) foo))
-;(un-anonymous (parser-L7 '(lambda ([y Int]) (lambda ([x Bool]) (if x 1 y)))))
-;; Desired response (language:L8 '(letfun ((foo Lambda (lambda ((y Int)) (letfun ((foo0 Lambda (lambda ((x Bool)) (if x 1 y)))) foo0)))) foo))
+;; (un-anonymous (parser-L7 '(lambda ([x Bool]) (if x 1 2))))
+;; Desired response (language:L8 '(letfun ((foo1 Lambda (lambda ((x Bool)) (if x 1 2)))) foo1))
+;; (un-anonymous (parser-L7 '(lambda ([y Int]) (lambda ([x Bool]) (if x 1 y)))))
+;; Desired response (language:L8 '(letfun ((foo2 Lambda (lambda ((y Int)) (letfun ((foo1 Lambda (lambda ((x Bool)) (if x 1 y)))) foo1)))) foo2))
+;; (un-anonymous (parser-L7 '(lambda ([x Bool]) (lambda ([y Int]) (lambda ([z Int]) (if x z y))))))
+;; Desired response (language:L8 '(letfun ((foo3 Lambda (lambda ((x Bool)) (letfun ((foo2 Lambda (lambda ((y Int)) (letfun ((foo1 Lambda (lambda ((z Int)) (if x z y)))) foo1)))) foo2)))) foo3))
 
 ;; ----------------------------------------- VERIFY-ARITY -----------------------------------------
 
