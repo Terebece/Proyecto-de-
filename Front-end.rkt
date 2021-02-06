@@ -40,7 +40,8 @@ EQUIPO: VeryBlueBerries
     (primapp pr e* ...)
     (list e* ...)
     (define x e)
-    (while [e0] e1)))
+    (while [e0] e1)
+    (for [x e0] e1)))
 
 ;; Predicate for the variables
 (define (variable? x)
@@ -268,6 +269,7 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
                  [(letfun ([,x* ,t* ,e*]) ,body) (remove* (list x*) (append (free-vars e*)(free-vars body)))]
                  [(define ,x ,e) (free-vars e)]
                  [(while [,e0] ,e1) (append (free-vars e0) (free-vars e1))]
+                 [(for [,x ,e0] ,e1) (append (free-vars e0) (free-vars e1))]
                  [else '()]))
 
 ;; Pass that verifies that expressions in L8 don't contain free variables
