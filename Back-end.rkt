@@ -59,6 +59,12 @@ EQUIPO: VeryBlueBerries
                                           ['#t (string-append "true")]
                                           ['#f (string-append "false")])]
                                   ['Char (string c)])]
+                 [,x (string-append (symbol->string x))]
+                 [,t (match t
+                       ['Int (string-append "int")]
+                       ['Bool (string-append "bool")]
+                       ['Char (string-append "char")]
+                       ['List (string-append "array")])]
                  [(primapp ,pr ,e* ...) (match pr
                                           ['+ (string-append (c (first e*)) "+" (c (second e*)))]
                                           ['- (string-append (c (first e*)) "-" (c (second e*)))]
@@ -73,23 +79,39 @@ EQUIPO: VeryBlueBerries
                                                   (nanopass-case (L12 Expr) e
                                                                  [,x (string-append (symbol->string x) "[0]")]
                                                                  [(array ,c0 ,t [,e*]) (string-append (c e) "[0]")]))]
-                                          ;['cdr ()])]
+                                          ;['cdr ()]
                                           )]
-                 [(begin ,[e*] ... ,e) ((let f ([e* e*])
-                                            (if (null? e*)
-                                                `((string-append "{""}"))
-                                                `((string-append "{"(c(first e*))"}" "\n" "{"(f (rest e*))"}")))))]
+                 [(begin ,[e*] ... ,e) (display (string-append "{"(c(first e*))"} \n {"((rest e*))"}"))]
                  [(if ,e0 ,e1 ,e2) (if (void? e2)
-                                       `((string-append "if" "("(c (e0))")" (c (e1)) ";"))
-                                       `((string-append "if" "("(c (e0))")" (c (e1)) ";" "\n" "else"(c (e2))";")))]
-                 [(let ([,x ,t ,e]) ,body) ((string-append (c (const x t)) ";" "\n" (c (e)) ";"))]
-                 [(letrec ([,x ,t ,e]) ,body) ((string-append (c (t)) (c (x)) "("(c (e))")"";") (c(body)))]
-                 [(letfun ([,x ,t ,e]) ,body) ((string-append (c (t)) (c (x)) "("(c (e))")"";") (c(body)))]
-                 [(array ,c0 ,t [,[e*] ...]) (let f ([e* e*])
-                                            (if (null? e*)
-                                              (string-append (c t)  "[" (c c0)"]" "=" "{""}")
-                                              (string-append (c t)  "[" (c c0)"]" "=" "{"(c (first e*)) ","(f (rest e*))"}")))
-                                           ]
-                 [(,e0 ,e1) ((string-append (c (e0))";" "\n" (c(e1))";"))]))
+                                       (string-append "if" "("(c e0)")" (c e1) ";")
+                                       (display (string-append "if" (string #\space) "("(c e0)")" (string #\space) (c e1) ";"
+                                         "\n" "else" (string #\space)(c e2)";")))]
+                 [(let ([,x ,t ,e]) ,body) (string-append (symbol->string t)(string #\space)(symbol->string (parse-L12 x)) "="(string #\space)  (c e) ";   "
+                                            (c body))]
+                 [(letrec ([,x ,t ,e]) ,body) (display (string-append (symbol->string t)(string #\space)(symbol->string (parse-L12 x)) "("(c e)")" ";\n"
+                                                                     "{" (c body) "}"))]
+                 [(letfun ([,x ,t ,e]) ,body) (display (string-append (symbol->string t) (symbol->string (parse-L12 x)) "("(c e) ")" ";\n"
+                                                             "{"  (c body) "}"))]
+                 #|[(array ,c0 ,t [,e* ...]) (string-append
+                                            (symbol->string t) "["(number->string c0)"]"(string #\space) "=" (string #\space) "{"
+                                            (for* ([j e*])
+                                             (c (first e*)) ",") "};")] |#
+  
+                [(array ,c0 ,t [,e* ...]) (string-append
+                                            (symbol->string t) "["(number->string c0)"]"(string #\space) "=" (string #\space) "{"
+                                                          (let f ([e* e*]) 
+                                                            (if (null? e*)
+                                                                ""
+                                                                 (string-append (c (first e*)) ","(f (rest e*))  )) )"};")]
+                 [(,e0 ,e1) (display (string-append (c e0)";\n"(c e1)";"))]))
+
+;----------- Examples for C--------------
+;;(c (parse-L12 '(if (const Bool #t) (primapp + (const Int 2) (const Int 2)) (primapp - (const Int 2) (const Int 2)))))
+; Return : "if(true)2+2;
+;           else2-2;"
+;; (c (parse-L12 '(let ([x Int (const Int 3)]) (primapp + x (const Int 4)))))
+; RReturn : "Int  x=3;    x+4"
+;; (c (parse-L12 '(array 4 Int [(const Int 1) (const Int 1) (const Int 1)(const Int 1)])))
+; return "Int[4] = {1,1,1,1};"
                                       
                                         
