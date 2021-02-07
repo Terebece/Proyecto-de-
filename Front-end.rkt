@@ -186,7 +186,7 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
 
 (define-parser parser-L8 L8)
 
-;; Devuelve el número de expresiones alfa que aparecen en la expresión.
+;; Returns the number of num-letfun expressions that appear in the expression
 (define (num-letfun exp n)
   (nanopass-case (L8 Expr) exp
    [(letfun ([,x ,t ,e]) ,body) (num-letfun e (+ n 1))]
