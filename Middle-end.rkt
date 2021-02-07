@@ -97,11 +97,18 @@ EQUIPO: VeryBlueBerries
                  [,x (get x ctx)]
                  [(const ,t ,c) t]
                  [(begin ,e* ... ,e)
-                  (let f ([e* e*])
-                    (let ([s (J (car e*) ctx)])
-                      (if (equal? (length e*) 1)
-                          (J e ctx)
-                          (f (cdr e*)))))]
+                  (let f ([e* e*] [nctx ctx])
+                    (let* ([r (car e*)]
+                           [s (J r nctx)])
+                      ;; If there's a decalaration for a global variable we need to add it to the context
+                      (nanopass-case (L10 Expr) r
+                                     [(define ,x ,e0)
+                                        (if (equal? (length e*) 1)
+                                          (J e (set-add nctx (cons x s)))
+                                          (f (cdr e*) (set-add nctx (cons x s))))]
+                                     [else (if (equal? (length e*) 1)
+                                               (J e nctx)
+                                               (f (cdr e*) nctx))])))]
                  ;; We check with every primitive operator
                  [(primapp ,pr ,e* ... ,e)
                   (case pr
@@ -147,7 +154,7 @@ EQUIPO: VeryBlueBerries
                       (let f ([e* e*])
                         (let ([t (J (car e*) ctx)])
                           (if (equal? (length e*) 1)
-                              (if (and (type? t) (equal? t 'Int))
+                              (if (and (type? t) (equal? t 'Int) (equal? t (J e ctx)))
                                   t
                                   (error "El tipo de uno o más argumentos no es Int."))
                               (if (and (type? t) (equal? t 'Int))
@@ -159,7 +166,7 @@ EQUIPO: VeryBlueBerries
                       (let f ([e* e*])
                         (let ([t (J (car e*) ctx)])
                           (if (equal? (length e*) 1)
-                              (if (and (type? t) (equal? t 'Bool))
+                              (if (and (type? t) (equal? t 'Bool) (equal? t (J e ctx)))
                                   t
                                   (error "El tipo de uno o más argumentos no es booleano."))
                               (if (and (type? t) (equal? t 'Bool))
