@@ -150,7 +150,7 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
 (define-parser parser-L7 L7)
 
 ;; Pass definition for currying let and letrec expressions.
-(define-pass curry-let : LF (e) -> L7 ()
+(define-pass curry-let : LNS (e) -> L7 ()
   (Expr : Expr (e) -> Expr ()
         [(let ([,x ,t ,[e]] [,x* ,t* ,[e*]] ...) ,[body*] ... ,[body])
          (let f ([x x] [t t] [e e] [x* x*] [t* t*] [e* e*] [body* body*] [body body])
