@@ -1,1 +1,1 @@
-(if #t (let ([x Int 7] [y Lambda (lambda ([z Int]) (* 6 z))]) (y x)) (- 5 3))
+(if #t (let ([x Int 7] [y Lambda (lambda ([z Int]) (primapp * 6 z))]) (y x)) (primapp - 5 3))
