@@ -1,3 +1,2 @@
-(lambda ([v Int]) 
-    (lambda ([u Int]) 
-        (primapp / v u)))
+(lambda ([v Int]) (primapp / v 8))
+        

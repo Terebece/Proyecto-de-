@@ -53,8 +53,11 @@ EQUIPO: VeryBlueBerries
 
 ;; Aplica los procesos de la etapa de Middle-end
 (define (processes-Middle-end exp)
-     (type-const
-      (curry exp)))
+  (uncurry
+   (type-infer
+    (type-const
+     (curry
+      (quote-c exp))))))
 
 
 ;; Aplica los procesos de la etapa de Back-end

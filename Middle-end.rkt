@@ -17,27 +17,35 @@ EQUIPO: VeryBlueBerries
 
 ;; -------------------------------------------- CURRY ---------------------------------------------
 
-;; Language L9 definition
-(define-language L9
+;; Language LQ definition
+(define-language LQ
   (extends L8)
   (Expr (e body)
-        (- c
-           (lambda ([x* t*] ...) body* ... body)
+        (- c)
+        (+ (quot c))))
+
+;; Language L9 parser
+(define-parser parse-LQ LQ)
+
+;; Pass to convert constants c into '(quot c)
+(define-pass quote-c : L8 (ir) -> LQ ()
+  (Expr : Expr (e) -> Expr ()
+        [,c `(quot ,c)]))
+
+;; Language L9 definition
+(define-language L9
+  (extends LQ)
+  (Expr (e body)
+        (- (lambda ([x* t*] ...) body* ... body)
            (e0 e1 ...))
-        (+ (quot c)
-           (lambda ([x t]) body)
+        (+ (lambda ([x t]) body)
            (e0 e1))))
 
 ;; Language L9 parser
 (define-parser parse-L9 L9)
 
-;; Pass to convert constants c into '(quot c)
-(define-pass quote-c : L8 (ir) -> L9 ()
-  (Expr : Expr (e) -> Expr ()
-        [(,c) `(quot ,c)]))
-
 ;; Pass for currying lambda expressions and function applications
-(define-pass curry : L8 (ir) -> L9 ()
+(define-pass curry : LQ (ir) -> L9 ()
   (Expr : Expr (e) -> Expr ()
         [(lambda ([,x* ,t*] ...) ,[body])
          (let f ([bindingx* x*]
