@@ -1,1 +1,0 @@
-("7.8" racket ("98c3a8a21983c03f9849b3b32c0a707a2ebf6316" . "f599203bfa4f69951e96256900e33f3256008beb") #"/Users/teresabecerril/Music/proyectoC/Proyecto-de-VeryBlueBerries/Front-end.rkt" (collects #"errortrace" #"errortrace-key.rkt") (collects #"nanopass" #"lang" #"reader.rkt") (collects #"nanopass" #"main.rkt") (collects #"racket" #"runtime-config.rkt"))
