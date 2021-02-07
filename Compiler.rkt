@@ -22,13 +22,13 @@ EQUIPO: VeryBlueBerries
 (require "Back-end.rkt")
 
 ;; Ruta del archivo que se va a compilar
-;(define path "ejemplo1.mt")
-;(define path "ejemplo2.mt")
-(define path "ejemplo3.mt")
+;(define path "ejemplo1")
+(define path "ejemplo2")
+;(define path "ejemplo3")
 
 ;; Lee el archivo especificado
 (define read-file
-  (read (open-input-file path)))
+  (read (open-input-file (string-append path ".mt"))))
 
 ;; Crea y escribe en un archivo lo que obtuvo de aplicar los procesos
 ;; correspondientes a una etapa de compilación
@@ -37,9 +37,15 @@ EQUIPO: VeryBlueBerries
    (lambda () (printf "~a" exp))
    #:mode 'text #:exists 'replace))
 
-
 ;; Parsea el contenido del archivo
 (define exp-lf (parse-LF read-file))
+
+;; Compila el archivo que se le especifica.
+(define (compilador exp)
+  (write-file (pretty-format (processes-Front-end exp)) (string-append path ".fe"))
+  (write-file (pretty-format (processes-Middle-end exp)) (string-append path ".me"))
+  ;(write-file (pretty-format ((processes-Back-end exp)) (string-append path ".c"))
+  )
 
 ;; Aplica los procesos de la etapa de Front-end
 (define (processes-Front-end exp)
@@ -57,11 +63,20 @@ EQUIPO: VeryBlueBerries
    (type-infer
     (type-const
      (curry
-      (quote-c exp))))))
+      (quote-c (processes-Front-end exp)))))))
 
 
 ;; Aplica los procesos de la etapa de Back-end
 (define (processes-Back-end exp)
-  (c (list-to-array exp)))
-  
+  (c (list-to-array (processes-Middle-end exp))))
 
+;; Imprime en la consola los pasos del compilador
+(compilador exp-lf)
+(println "Entrada:")
+exp-lf
+(println "Front-end:")
+(processes-Front-end exp-lf)
+(println "Middle-end:")
+(processes-Middle-end exp-lf)
+;;(println "Back-end:")
+;;(processes-Back-end exp-lf)

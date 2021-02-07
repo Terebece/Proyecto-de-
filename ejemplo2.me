@@ -1,0 +1,10 @@
+(language:L11
+ '(if (const Bool #t)
+    (let ((x Int (const Int 7)))
+      (letrec ((y
+                Lambda
+                (letfun
+                 ((foo1 Lambda (lambda ((z Int)) (primapp * (const Int 6) z))))
+                 foo1)))
+        (y x)))
+    (primapp - (const Int 5) (const Int 3))))

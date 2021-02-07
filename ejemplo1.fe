@@ -1,0 +1,1 @@
+(language:L8 '(let ((x Int 25)) (let ((y Int 32)) (primapp * x y))))

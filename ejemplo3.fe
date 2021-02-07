@@ -1,0 +1,1 @@
+(language:L8 '(letfun ((foo1 Lambda (lambda ((v Int)) (primapp / v 8)))) foo1))
