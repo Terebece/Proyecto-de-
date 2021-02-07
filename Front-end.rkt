@@ -268,7 +268,13 @@ Answer: (language:LNS '(list #\E #\s #\t #\o #\space #\e #\s #\space #\u #\n #\s
 (define (free-vars e)
   (nanopass-case (L8 Expr) e
                  [,x (list x)]
-                 [(begin ,e* ... ,e) (append (append-map free-vars e*) (free-vars e))]
+                 [(begin ,e* ... ,e) (let f ([e* e*] [e e])
+                                       (if (equal? (length e*) 0)
+                                           (free-vars e)
+                                           (let ([fe (car e*)])
+                                             (nanopass-case (L8 Expr) fe
+                                                            [(define ,x ,e0) (remove* (list x) (append (f (cdr e*) e) (free-vars e0)))]
+                                                            [else (append (free-vars fe) (f (cdr e*) e))]))))]
                  [(primapp ,pr ,e* ... ,e) (append (append-map free-vars e*) (free-vars e))]
                  [(if ,e0 ,e1 ,e2) (append (free-vars e0) (free-vars e1) (free-vars e2))]
                  [(list ,e* ,e) (append (append-map free-vars e*) (free-vars e))]
