@@ -75,11 +75,10 @@ EQUIPO: VeryBlueBerries
                                           ['or (string-append (c (first e*)) "||" (c (second e*)))]
                                           ['length (let ([e (first e*)])
                                                      (string-append "sizeof(" (c e) ")/sizeof(" (c (parse-L12 `(car e))) ")"))]
-                                          ['car (let ([e (first e*)])
-                                                  (nanopass-case (L12 Expr) e
-                                                                 [,x (string-append (symbol->string x) "[0]")]
-                                                                 [(array ,c0 ,t [,e*]) (string-append (c e) "[0]")]))]
-                                          ;['cdr ()]
+                                          ['car (let ([e (first e*)]) (string-append (c e) "[0]"))]
+                                          ['cdr (let ([e (first e*)])
+                                                  (string-append "for(i=1; i<" (c (parse-L12 `(primapp length e))) "; i++){
+                                                                      \n" (c e) "[i]=" (c e) "[i+1];" "}" ))]
                                           )]
                  [(begin ,[e*] ... ,e) (display (string-append "{"(c(first e*))"} \n {"((rest e*))"}"))]
                  [(if ,e0 ,e1 ,e2) (if (void? e2)
