@@ -33,20 +33,7 @@ EQUIPO: VeryBlueBerries
 ;; and elements of the list.
 (define-pass list-to-array : L11 (ir) -> L12 ()
   (Expr : Expr (ir) -> Expr()
-        [(list ,e* ...) `(array ,(length e*) ,(typeof ir) [,e*])]))
-
-;; Function that given a list expression in L11
-;; returns the type of the elements of the list.
-(define (typeof expr)
-  (let ([t (J (go-back expr) '())]) 
-    (if (c-type? t)
-        (let* ([l (car t)]
-               [s (cadr t)]
-               [lt (caddr t)])
-          (if (and (equal? l 'List) (equal? s 'of))
-              lt
-              (error "No lista.")))
-        (error "No lista."))))
+        [(list ,[e*] ...) `(array ,(length e*) ,(typeof (go-back ir)) [,e*])]))
 
 ;; Pass that changes an expression of L11 back to L10.
 ;; Curry lambda expressions.
@@ -60,7 +47,7 @@ EQUIPO: VeryBlueBerries
                `(lambda ([,(car bindingx*) ,(car bindingt*)]) ,(f (cdr bindingx*) (cdr bindingt*)))))]))
 
 
-;;(list-to-array (parse-L11'(list (const Int 0) (const Int 0) (const Int 0) (const Int 0))))
+;;(list-to-array (parse-L11'(list (const Int 0) (const Int 1) (const Int 2) (const Int 3))))
 
 ;; ---------------------------------------------- C -----------------------------------------------
 

@@ -221,7 +221,9 @@ EQUIPO: VeryBlueBerries
                         (error "F: El primer parámetro no es una función. :c")))]
                  [(define ,x ,e) (J e ctx)]
                  [(while [,e0] ,e1) (J e1 ctx)]
-                 [(for [,x ,e0] ,e1) (J e1 ctx)]
+                 [(for [,x ,e0] ,e1)
+                  (let ([t (typeof e0)])
+                    (J e1 (set-add ctx (cons x t))))]
                  ))
 
 
@@ -233,6 +235,19 @@ EQUIPO: VeryBlueBerries
         (if (equal? x (car d))
             (cdr d)
             (get x (cdr d))))))
+
+;; Function that given a list expression in L10
+;; returns the type of the elements of the list.
+(define (typeof expr)
+  (let ([t (J expr '())]) 
+    (if (c-type? t)
+        (let* ([l (car t)]
+               [s (cadr t)]
+               [lt (caddr t)])
+          (if (and (equal? l 'List) (equal? s 'of))
+              lt
+              (error "No es una lista.")))
+        (error "No es una lista."))))
 
 ;; -------- Examples for the J algorithm -------------
 ;; (J (parse-L10 '(primapp or (primapp not (const Bool #t)) (const Bool #f))) '())
@@ -247,8 +262,11 @@ EQUIPO: VeryBlueBerries
 ;; (J (parse-L10 '(letfun ([foo (Bool → Int) (lambda ([x Bool]) (if x (const Int 1) (const Int 2)))]) foo)) '())
 ;; Returns: '(Bool → Int)
 
-;;(J (parse-L10 '(begin (const Int 2) (primapp car (list (const Int 6) (const Bool #t))) (const Bool #t))) '())
+;; (J (parse-L10 '(begin (const Int 2) (primapp car (list (const Int 6) (const Bool #t))) (const Bool #t))) '())
 ;; Returns: "La lista no es homogenea."
+
+;; (J (parse-L10 `(for [x (list (const Int 4) (const Int 7) (const Int 5))] (primapp + x (const Int 1)))) '())
+;; Returns: 'Int
 ;; ---------------------------------------------------
 
 ;; Pass for L10 that substitutes type Lambda references for type T->T
